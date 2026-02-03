@@ -1,0 +1,911 @@
+\documentclass{article}
+\usepackage{graphicx} % Required for inserting images
+\usepackage{pgfplots}
+\usepackage{amsmath, amsthm, amssymb}
+\usepackage{titling}
+\setlength{\droptitle}{-2em}
+\frenchspacing
+\title{\textbf{Symmetries in Classical Field Theory: A Brief Overview}}
+\author{}
+\date{}
+\usepackage{parskip}
+\newtheorem{definition}{Definition}[section]
+\usepackage{hyperref}
+\usepackage{tikz}
+\usepackage{tikz-3dplot}
+\newcommand{\deriv}{\text{d}}
+\newtheorem{proposition}{Proposition}[section]
+\newtheorem{remark}{Remark}[section]
+\newtheorem{theorem}{Theorem}[section]
+\usepackage{tikz}
+\usepackage{physics}
+\newtheoremstyle{defit}      % name
+  {3pt}{3pt}                 % space above/below
+  {\itshape}                 % body font  <-- this is the key
+  {}                         % indent
+  {\bfseries}                % head font
+  {.}                        % punctuation after head
+  {.5em}                     % space after head
+  {}                         % head spec
+
+\theoremstyle{defit}
+
+
+\usetikzlibrary{calc,arrows.meta}
+\begin{document}
+\maketitle
+\begin{abstract}
+    \noindent
+    In this pedagogical review we introduce classical relativistic field theory, Noether’s theorem, and continuous symmetries, illustrating the formalism with examples including real and complex scalar fields, Lorentz and internal $U(1)$ transformations, Maxwell and Proca theory, and simple scale-invariant models.
+\end{abstract}
+
+\section{Introduction}
+The aim of this note is to serve as an introduction to classical field theory. We begin with an overview of classical fields themselves. We then derive Noethers theorem, and finally, we look at some applied examples. \\
+
+A quick note on conventions within this text: we opt to use natural units such that $c=1=\hbar$, and we choose our spacetime manifold to be Minkowski space $\mathbb{R}^{1,3}$ with metric signature $(-\,+\,+ \,\, + )$ (in opposition to the particle physicists choice). We also denote a global inertial coordinate system via $x^\mu = (t,\mathbf{x})$. \\
+
+These notes were inspired by the lecture course that the author took at Cambridge, as well as the excellent textbook by Matthew D. Schwartz.
+
+
+\section{What is a Field?}
+
+\begin{figure}[t]
+  \centering
+  \tdplotsetmaincoords{70}{110}
+
+  \begin{tikzpicture}[tdplot_main_coords, >=stealth]
+
+    % --- 3D volumetric grid ---
+    \def\L{3}       % box size
+    \def\step{0.5}  % grid spacing
+
+    % lines parallel to x-axis
+    \foreach \y in {0,\step,...,\L}{
+      \foreach \z in {0,\step,...,\L}{
+        \draw[gray, very thin, opacity=0.19] (0,\y,\z) -- (\L,\y,\z);
+      }
+    }
+    % lines parallel to y-axis
+    \foreach \x in {0,\step,...,\L}{
+      \foreach \z in {0,\step,...,\L}{
+        \draw[gray, very thin, opacity=0.19] (\x,0,\z) -- (\x,\L,\z);
+      }
+    }
+    % lines parallel to z-axis
+    \foreach \x in {0,\step,...,\L}{
+      \foreach \y in {0,\step,...,\L}{
+        \draw[gray, very thin, opacity=0.19] (\x,\y,0) -- (\x,\y,\L);
+      }
+    }
+
+    % axes (on top of grid)
+    \draw[->] (0,0,0) -- (\L+0.5,0,0) node[anchor=north east] {$x$};
+    \draw[->] (0,0,0) -- (0,\L+0.5,0) node[anchor=north west] {$y$};
+    \draw[->] (0,0,0) -- (0,0,\L+0.5) node[anchor=south] {$z$};
+
+    % vector field F(x,y,z) = (-y, x, z)
+    \def\scale{0.25}
+    \foreach \x in {0.5,1.5,2.5}{
+      \foreach \y in {0.5,1.5,2.5}{
+        \foreach \z in {0.5,1.5,2.5}{
+          \pgfmathsetmacro{\vx}{-\y * \scale}
+          \pgfmathsetmacro{\vy}{ \x * \scale}
+          \pgfmathsetmacro{\vz}{ \z * \scale}
+          \draw[->, blue, thick] (\x,\y,\z) -- ++(\vx,\vy,\vz);
+        }
+      }
+    }
+
+  \end{tikzpicture}
+  \caption{A sample vector field $F(x,y,z)=(-y,x,z)$ in $\mathbb{R}^3$.}
+  \label{fig:vector-field-3d}
+\end{figure}
+The prototypical examples of classical relativistic field theories are Maxwells Electromagnetism and Gravitation (note that Newtons theory can be described in terms of fields, but it is not relativistic). Maxwells theory of electromagnetism is actually the first example of a relativistic field theory, as it is naturally Lorentz covariant. In order to introduce the theory properly, we must define what we mean by a field. In modern physics, they are often best understood as a smooth section of a bundle. 
+
+\begin{definition}[Fibre bundle] \label{Fibre bundle}
+A fibre bundle with typical fibre $F$ over a manifold $M$ is a quadruple
+\[
+(E, M, \pi, F),
+\]
+where $E$ is also a  smooth manifold, $\pi:E\rightarrow M$ is a smooth surjection, and for every $x\in M$ there exists an open neighbourhood $U\subseteq M$ of $x$ and a diffeomorphism (a \emph{local trivialisation})
+\begin{equation*}
+    \varphi:\pi^{-1}(U)\longrightarrow U\times F
+\end{equation*}
+such that
+\begin{equation*}
+    \operatorname{pr}_1\circ \varphi \;=\; \pi\big|_{\pi^{-1}(U)},
+\end{equation*}
+with 
+
+\begin{equation*}
+    \operatorname{pr}_1:U \times F \rightarrow U \, .
+\end{equation*}
+The fibre over $x$ is $E_x:=\pi^{-1}(x)$.
+\end{definition}
+
+The fibre of a fibre bundle $E_x$ can be locally trivialised to product space 
+\begin{equation*}
+    E_x \cong \{x\} \times F \, .
+\end{equation*}
+With this, a smooth section is then the object formed from allowing $x$ to vary smoothly. We can make this more formal via the following:
+
+\begin{definition}
+    Given a fibre bundle $(E,M,\pi, F)$, and a local trivialising chart $(U,\varphi)$ containing $x \in M$, a (local) smooth section is the map 
+    \begin{equation*}
+        f:U \rightarrow E \, ,
+    \end{equation*}
+    such that $\pi(f(x)) = x$ for all $x \in U$. Locally, we can trivialise with $\varphi$ and construct the map
+    \begin{equation*}
+        \varphi \circ f: U \rightarrow U \times F \, ,
+    \end{equation*}
+    often written as 
+    \begin{equation*}
+        (\varphi \circ f)(x) = (x, \sigma(x)) \, ,
+    \end{equation*}
+    for some map $\sigma$. We can then identify the section $f$ with the map $\sigma:U \rightarrow F$.
+\end{definition}
+
+
+It is best to solidify these concepts with some examples. One common example is the temperature distribution in a room (at a fixed time). It can be represented by a scalar field, which is a map $T:\mathbb{R}^{3} \rightarrow \mathbb{R}$. In that case, it is a smooth section of the (trivial) real line bundle. Similarly, the flow of a fluid field can be represented by a vector field, which would then be the smooth section of the tangent bundle: a map $X: \mathbb{R}^{3} \rightarrow T\mathbb{R}^{3}$, where $T\mathbb{R}^{3}$ is the tangent bundle associated with $\mathbb{R}^3$, with $\pi: T\mathbb{R}^{3} \rightarrow \mathbb{R}^{3}$ such that $\pi \circ X = \text{id}_{\mathbb{R}^3}$. A visual example of such a flow can be seen in \ref{fig:vector-field-3d}. In this example, we take $M = \mathbb{R}^3$ and $T\mathbb{R}^3 \cong \mathbb{R}^3 \times \mathbb{R}^3$. The vector field is then identified as the map $F:\mathbb{R}^3 \rightarrow \mathbb{R}^3$. This rigorous definition of a field has many advantages: for instance, it allows us to generalise easily to different kinds of fields, and it also makes the later discussion of quantisation more systematic (although we will not pursue those details here). \\
+
+For our purposes, however, this full definition is not often required. We will identify a field (in the scalar field theory case) as the map $\phi:M \rightarrow \mathbb{R}/\mathbb{C}$, which is a smooth section of the real or complex line bundle over $M$ (analogous to the temperature distribution). However, when we turn to classical Maxwell theory, we will have to discuss what we mean by the field more carefully. We now review some aspects of Lagrangian mechanics.
+
+
+\subsection{Lagrangian mechanics}
+
+You are likely familiar with the Lagrangian for a point particle, usually
+introduced as
+\[
+  L = T - V ,
+\]
+where $T$ is the kinetic energy and $V$ is the potential energy. In field
+theory, however, the more fundamental object is the \emph{Lagrangian density}.
+
+\begin{definition}[Lagrangian density]
+Given a field $\phi$ on a spacetime $(M,g)$, a (classical) Lagrangian density is
+a function
+\[
+  \mathcal{L} = \mathcal{L}\big(x,\phi(x),\partial\phi(x),\ldots\big),
+  \qquad x\in M,
+\]
+which is a scalar under coordinate transformations. 
+\end{definition}
+
+The Lagrangian density allows one to define the \textit{classical action} of a theory. It encodes the dynamics of the theory and can be defined as follows: 
+
+\begin{definition}[Classical action]
+Given a field $\phi$ on a spacetime $(M,g)$ the classical action is the functional 
+\begin{equation*}
+      S[\phi] \;=\; \int_M \mathrm d^n x\,\sqrt{|g(x)|}\,\mathcal{L}\big(x,\phi,\partial\phi,\ldots\big) \, ,
+\end{equation*}
+where $g=\det(g_{\mu\nu})$. The factor $\sqrt{|g|}$ provides the invariant
+volume element, ensuring that the action $S[\phi]$ is independent of the choice
+of coordinates on $M$.
+\end{definition}
+  
+
+
+
+As we take our spacetime manifold to be Minkowski space, it is trivial to notice that
+
+\begin{equation*}
+    |\eta| = 1 \, .
+\end{equation*}
+
+Therefore, it is often omitted in QFT courses unless explicitly investigating curved spacetimes. As stated, the action encodes the dynamics of the theory; this is achieved via the \textit{stationary action principle}. 
+
+
+
+The stationary action principle states that the path a particle takes between
+two fixed points in configuration space is one that extremises the action.  The same idea applies in the context of fields: instead of particle trajectories we
+now speak about field configurations, and the physical evolution between two configurations is determined by requiring that the action functional be stationary. \\
+
+We shall now make this explanation less informal by first considering the
+trajectory of a point particle and then generalising to the case of a field.
+
+\subsubsection{Trajectory of a point particle}
+
+\begin{figure}[htbp]
+  \centering
+  \begin{tikzpicture}[scale=1.0, >=stealth]
+
+    % axes
+    \draw[->] (0,0) -- (7,0) node[below right] {$t$};
+    \draw[->] (0,0) -- (0,5) node[above left] {$q$};
+
+    % endpoints
+    \coordinate (A) at (1,1);
+    \coordinate (B) at (6,4);
+
+    \fill (A) circle (1.5pt) node[below] {$(t_1,q_1)$};
+    \fill (B) circle (1.5pt) node[above right] {$(t_2,q_2)$};
+
+    % some non-physical paths
+    \draw[gray, dashed]
+      (A) .. controls (1.5,3.5) and (3.0,0.3) .. (B);
+    \draw[gray, dashed]
+      (A) .. controls (2.0,0.1) and (4.0,3.9) .. (B);
+    \draw[gray, dashed]
+      (A) .. controls (1.0,1.2) and (4.5,0.8) .. (B);
+
+    % label for "possible paths"
+    \node[gray] at (5,1.5) {$q(t) + \epsilon \eta(t)$};
+
+    % physical (stationary action) path
+    \draw[blue, very thick]
+      (A) .. controls (2.0,1.6) and (4.0,2.5) .. (B)
+      node[pos=0.55, above, sloped] {$\text{physical path: }\delta S = 0$};
+
+  \end{tikzpicture}
+  \caption{Many possible paths between fixed endpoints; the physical path is the one for which the action is stationary (minimal in simple cases).}
+  \label{fig:least-action}
+\end{figure}
+
+Consider a point particle in one spatial dimension, with position $q(t)$ and
+Lagrangian
+\begin{equation*}
+     L = L\big(q(t),\dot q(t),t\big) \, ,
+\end{equation*}
+ 
+
+where $\dot q$ denotes the derivative of the particle's position with respect
+to time. The action functional for this particle is
+\begin{equation*}
+S[q] = \int_{t_1}^{t_2} \mathrm dt\, L\big(q(t),\dot q(t),t\big) \, .
+\end{equation*}
+
+Now we suppose that the particles position is perturbed, 
+
+\begin{equation*}
+    q(t) \rightarrow q(t) +\epsilon\eta(t) \, ,
+\end{equation*}
+
+with $\epsilon \ll 1$ and $\eta(t)$ compactly supported on $(t_1, t_2)$. With this, the Lagrangian is varied via 
+
+\begin{equation*}
+    L \rightarrow L + \epsilon \eta(t)\dv{L}{q} + \epsilon \dv{\eta}{t} \dv{L}{\dot{q}(t)} + \mathcal{O}(\epsilon^2) \, .
+\end{equation*}
+
+Thus, the action becomes
+
+\begin{align*}
+    S[q + \epsilon \eta] & = \int_{t_1}^{t_2} \deriv t \, L + \epsilon \eta(t)\dv{L}{q} + \epsilon \dv{\eta}{t} \dv{L}{\dot{q}(t)}\\
+    & = \int_{t_1}^{t_2} \deriv t \, L + \int_{t_1}^{t_2} \deriv t \, \epsilon \eta(t)\dv{L}{q} + \epsilon \dv{\eta}{t} \dv{L}{\dot{q}(t)}\\
+    & = S + \delta S \, ,
+\end{align*}
+
+where 
+\begin{equation*}
+    \delta S:=\int_{t_1}^{t_2} \deriv t \, \epsilon \eta(t)\dv{L}{q} + \epsilon \dv{\eta}{t} \dv{L}{\dot{q}(t)} \, .
+\end{equation*}
+In order to extremise the action, we demand that $\delta S = 0$ (analogous to finding the extrema of a function);  
+
+\begin{align*}
+    \delta S & = \int_{t_1}^{t_2} \deriv t \, \epsilon \eta(t)\pdv{L}{q} + \epsilon \pdv{\eta}{t} \pdv{L}{\dot{q}(t)} = 0 \\
+    & = \int_{t_1}^{t_2} \deriv t \, \epsilon \eta(t)\pdv{L}{q} + \int_{t_1}^{t_2} \deriv t \, \epsilon \pdv{}{t}\left(\eta(t) \pdv{L}{\dot{q}}\right) - \int_{t_1}^{t_2} \deriv t \, \epsilon \eta(t) \dv{}{t}\left(\dv{L}{\dot{q}}\right) =0 \\
+    & = \int_{t_1}^{t_2} \deriv t \, \epsilon \eta(t) \left(\pdv{L}{q} - \pdv{}{t}\left(\pdv{L}{\dot{q}}\right) \right) = 0 \, .
+\end{align*}
+
+To achieve the last line, we used the fundamental theorem of calculus and the fact $\eta$ is compactly supported. The variation of $S$ is required to be zero, and since $\eta$ was entirely arbitrary, this must hold for all such $\eta$; thus, we find 
+
+\begin{equation*}
+    \boxed{\pdv{L}{q} - \dv{}{t}\left(\pdv{L}{\dot{q}}\right) = 0 \, .}
+\end{equation*}
+
+This is the \textit{Euler-Lagrange} (E-L) equation ; it is boxed to emphasise its importance. This equation gives the equation of motion for the particle, i.e. its trajectory. A visual example of this can be seen in \ref{fig:least-action}. \\
+
+\textbf{Example}: Assume we have a free particle of mass $m$ and a Lagrangian 
+
+\begin{equation*}
+    L = \frac{1}{2}m\dot{q}^2 \, ,
+\end{equation*}
+
+then, the E-L equation yields, 
+
+\begin{align*}
+    \dv{}{t} \left(m \dot{q}(t)\right) & = 0 \\
+    \implies m \Ddot{q}(t) & = 0 \, .
+\end{align*}
+
+This is nothing but Newtons $2^\text{nd}$ law, where the total force is 0. Solving this equation, one finds that the trajectory of a particle is a linear function
+
+\begin{equation*}
+    q(t) = C_1t + C_2 \, ,
+\end{equation*}
+
+where $C_1, C_2$ are typically fixed with either Neumann or Dirichlet boundary conditions. 
+
+
+\subsubsection{The Euler-Lagrange equations for a field}
+
+The preceding argument extends naturally to fields. The configuration space is
+now infinite-dimensional: each point in this space corresponds to a complete
+field configuration $\phi(x)$ (for all $x$ in spacetime).
+\footnote{This viewpoint is closely related to the idea of ``theory space'' in
+renormalisation group (RG) flows, where each point represents a different field
+theory, parametrised by its couplings. The RG flow can then be viewed as a
+vector field on this space, flowing towards fixed points.} Following essentially the same argument, one finds that a field $\phi(x)$ with Lagrangian density $\mathcal L(\phi,\partial\phi)$
+satisfies the Euler--Lagrange equation  
+
+\begin{equation*}
+    \boxed{\pdv{\mathcal{L}}{\phi} - \partial_\mu\left(\pdv{\mathcal{L}}{(\partial_\mu \phi)}\right) = 0 \, ,} 
+\end{equation*}
+
+where $\partial_\mu := \frac{\partial}{\partial x^\mu}$ and repeated indices
+$\mu$ are summed over. In global inertial coordinates $x^\mu = (t,\mathbf x)$, one may
+write $\partial_\mu = (\partial_t,\nabla)$. If a field satisfies the E-L equations it is said to be \textit{on-shell}. \\
+
+\textbf{Example}: Consider the Lagrangian density of a \textit{massive scalar field}
+
+\begin{equation*}
+    \mathcal{L} = \frac{1}{2}\partial_\mu \phi \partial^\mu \phi  - \frac{1}{2}m^2 \phi^2 \, ,
+\end{equation*}
+
+using the E-L equations,
+
+\begin{align*}
+    -m^2 \phi - \partial_\mu(\partial^\mu \phi) & = 0\\
+    \implies \left(\partial_\mu \partial^\mu + m^2\right) \phi & = 0 \, .
+\end{align*}
+
+The final line is nothing but the \textit{Klein-Gordon} equation: the relativistic wave equation with (assuming a plane wave solution) the dispersion relation
+
+\begin{equation*}
+    E^2 = \mathbf{p}^2 + m^2 \, .
+\end{equation*}
+
+
+\subsubsection{Lorentz invariance}
+
+Our field theories had better be Lorentz invariant. To encode this, we require the action functional to be invariant under a Lorentz transformation. To understand this requirement, consider, for example, the worldline of a particle in spacetime, as described by the
+Euler-Lagrange equations (derived from the action). It is a geometric curve that
+does not depend on which inertial observer is describing it. The coordinate
+representation of this curve, $q(t)$, will, of course, look different to
+different observers: the perceived position of the object may vary depending on
+the observer's location and velocity. However, the underlying curve in
+spacetime is the same; only the coordinates used to describe it change.  \\
+
+\subsubsection{The Lorentz group}
+
+A Lorentz transformation is one that preserves the invariant line element (or quadratic form in Minkowski space). Under the transformation $x^\mu \rightarrow x^{\prime \mu}= \Lambda^\mu_\nu x^\nu$, we have
+
+\begin{align*}
+    \deriv s^2  = \eta_{\mu \nu}\deriv x^{\prime \mu}\deriv x^{\prime \nu} &= \eta_{\mu \nu}\deriv x^\mu \deriv x^\nu\\
+    & = \Lambda^\mu_\rho \eta_{\mu \nu} \Lambda^\nu_\sigma \deriv x^{\rho} \deriv x^\sigma \, ,
+\end{align*}
+
+for the equality to hold, we require 
+
+\begin{equation*}
+    \Lambda^\intercal \eta \Lambda = \eta \, .
+\end{equation*}
+
+We then find
+
+\begin{align*}
+    (\det(\Lambda))^2  & = 1\\
+    \implies \det(\Lambda) & = \pm 1 \, .
+\end{align*}
+The Lorentz group with $\det(\Lambda) = 1$ is technically the pseudo-orthogonal group $SO(1,3)$. Note that the full group manifold for the Lorentz group is non-compact, with several disconnected components (proper/improper, time-reversal etc). We often require that 
+\begin{equation*}
+    \Lambda_0^0 \geq0 \, ,
+\end{equation*}
+which corresponds to time ``pointing forwards''; this is called the proper orthochronus Lorentz group, and denoted by $SO^+(1,3)$.
+\\
+
+
+\subsubsection{Viable Lagrangians}
+
+The fact that our action must be Lorentz invariant is very powerful. This is because it constrains the viable Lagrangian densities; overall, it must transform as a Lorentz scalar. For example, consider the Lagrangian (density)
+
+\begin{equation*}
+    \mathcal{L} = \partial_\mu \phi + m\phi^2 \, .
+\end{equation*}
+
+This is, of course, viable if we allow for a completely general local dependence on $x$ and arbitrary non-linear terms i.e., 
+
+\begin{equation*}
+    \mathcal{L}(x,\phi,\partial\phi,\dots,\partial^k\phi)
+  =F\!\left(x, \phi,  \big(\partial^{\alpha}\phi(x)\big)_{|\alpha|\le k}\right) \, ,
+\end{equation*}
+
+with 
+
+\begin{equation*}
+    \partial^\alpha \phi : = \frac{\partial^{|\alpha|}}{\partial^{\alpha_1}\cdots \partial^{\alpha_n}}\phi \, ,
+\end{equation*}
+
+$k \in \mathbb{N}$, $\alpha = (\alpha_1, \cdots, \alpha_n) \in \mathbb{N}^n$, $|\alpha| = \alpha_1 + \cdots + \alpha_n$, and $F$ some arbitrary smooth function. The above extends to arbitrary $k$. In our example, under a Lorentz transformation 
+
+\begin{equation*}
+    x^\mu \rightarrow x^{\prime \mu} = \Lambda^\mu_\nu x^\nu \, ,
+\end{equation*}
+
+
+the field transforms as 
+
+\begin{equation*}
+    \phi \rightarrow \phi(\Lambda^{-1}x), \hspace{0.25cm} \partial_\mu\phi \rightarrow \Lambda^\nu_\mu \partial_\nu \phi \, ,
+\end{equation*}
+
+thus, our Lagrangian transforms via
+
+
+\begin{equation*}
+    \mathcal{L} \rightarrow \mathcal{L}^\prime = \Lambda^{\nu}_\mu \partial_\nu \phi + m \phi^2 \, .
+\end{equation*}
+
+The first term transforms as a vector component, while $m\phi^2$ is a scalar\footnote{This is described in terms of representations of the Lorentz group. For example, the derivative term transforms under the ``vector representation of the group,'' while the field transforms under the ``trivial representation''. This subject is slightly beyond the scope of this text; however, we strongly suggest that the reader read further into the subject.};
+their sum does not transform as a scalar, so $\mathcal L$ is not Lorentz
+invariant. However, look at the similar Lagrangian density
+
+\begin{equation*}
+    \mathcal{L} = \partial_\mu \phi
+ \partial^\mu \phi + m\phi^2 \, ,
+ \end{equation*}
+
+ which is essentially the typical Lagrangian of a massive scalar field. It transforms as 
+
+ \begin{align*}
+     \mathcal{L} \rightarrow \mathcal{L^\prime} & = \Lambda^\nu_\mu \Lambda^\mu_\rho \eta^{\tau \rho}\partial_\nu\phi \partial_\tau \phi + m \phi^2\\
+     & = \partial_\mu \phi \partial^\mu \phi + m\phi^2 \\
+     & = \mathcal{L}\, ,
+ \end{align*}
+
+where we used the defining relation for a Lorentz transformation. Thus, this does indeed transform as a scalar and is a viable Lagrangian. In general, viable Lagrangians are ones with indices fully contracted with invariant tensors (such as $\eta_{\mu\nu}$ or
+$\epsilon_{\mu\nu\rho\sigma}$), so that each term in $\mathcal{L}$ is a scalar
+built from the fields and their derivatives. One often also demands
+spacetime translation invariance, which forbids any explicit dependence of
+$\mathcal{L}$ on the coordinates $x^\mu$.    \\
+
+
+Let us now show that a general (viable) Lagrangian leads to a Lorentz invariant action. To do this, notice that since $\mathcal{L}$ is viable, it must transform as a scalar. Under a Lorentz transformation, the corresponding Jacobian is 
+
+\begin{equation*}
+    J^{\mu}_\nu := \pdv{x^{\prime \mu}}{x^\nu} =  \Lambda^\mu_\nu \, ,
+\end{equation*}
+
+with 
+
+\begin{equation*}
+    |\det(J)| = |\det(\Lambda)| = 1 \, ,
+\end{equation*}
+
+thus, we have 
+\vspace{-0.2cm}
+\begin{align*}
+    S \rightarrow S^\prime = \int \deriv^4{x^\prime} \, |\det(\Lambda)| \, \mathcal{L} = \int \deriv ^4 x \, \mathcal{L} = S \, .
+\end{align*}
+
+
+\section{Noether's Theorem}
+
+Noether's theorem is arguably one of the most important theorems in theoretical physics. Before we write it down we must first define what we mean by a continuous symmetry:
+
+\begin{definition}
+    A \textit{continuous symmetry} is an infinitesimal coordinate transformation that leaves the action invariant. 
+\end{definition}
+
+An example of this would be the Lorentz transformations discussed in the previous section. Infinitesimally, we may write
+
+\begin{equation*}
+    \Lambda^\mu_\nu = \delta^{\mu}_\nu + \omega^\mu_\nu +\mathcal{O}(\omega^2) \, ,
+\end{equation*}
+
+where $\omega^\mu_\nu$ is small and satisfies
+
+\begin{equation*}
+    \omega_{\mu \nu} = - \omega_{\nu \mu} \, .
+\end{equation*}
+
+This matrix, as well as being anti-symmetric, has 6-independent components corresponding to 3 spacetime rotations as well as 3 boosts. We shall return to this example soon. There are two types of  continuous symmetries: \textit{global} and \textit{local}. Global symmetries affect the fields only, while local symmetries act on the spacetime coordinates as well as the fields.\\
+
+
+Noether's theorem (informally) states
+
+\begin{theorem}
+    Every continuous symmetry gives rise to a \textit{conserved current} $j^\mu$ such that
+
+    \begin{equation*}
+        \partial_\mu j^\mu = 0 \, .
+    \end{equation*}
+
+    Given suitable boundary conditions, each current gives rise to a \textit{conserved charge}
+
+    \begin{equation*}
+        Q = \int \deriv ^3 x \, j^0 \, .
+    \end{equation*}
+\end{theorem}
+
+
+Let us derive the conserved current from a general transformation. Begin with the infinitesimal transformation
+
+\begin{equation*}
+    \phi \rightarrow \phi^\prime =\phi + \delta \phi \, ,
+\end{equation*}
+
+under this change, we require 
+
+\begin{equation*}
+    \delta S = S[\phi^\prime] - S[\phi] = 0 \, .
+\end{equation*}
+
+This requirement is equivalent to demanding 
+
+\begin{align*}
+    \delta \mathcal{L} & = \mathcal{L}^\prime - \mathcal{L}\\
+    & = \mathcal{L} + \pdv{\mathcal{L}}{\phi} \delta \phi + \pdv{\mathcal{L}}{\partial_\mu \phi} \partial^\mu(\delta \phi) - \mathcal{L}\\
+    & = \pdv{\mathcal{L}}{\phi} \delta \phi + \pdv{\mathcal{L}}{(\partial_\mu \phi)} \partial^\mu(\delta \phi) = \partial_\mu F^\mu \, ,
+\end{align*}
+
+where $F$ is some smooth function of the fields and its derivatives. The last line is the requirement that the variation in the Lagrangian be at most a \textit{surface term} (derivative term). This ensures that it vanishes in the action, given sufficient boundary conditions. We may rearrange the above and use the E-L (assuming the field is on-shell) equations to find
+
+\begin{equation*}
+    \partial_\mu\left(\pdv{\mathcal{L}}{(\partial_\mu \phi)} \delta \phi - F^\mu \right) = 0 \, ,
+\end{equation*}
+
+the term inside the brackets is defined to be the conserved current 
+
+\begin{equation*}
+    j^\mu : = \pdv{\mathcal{L}}{(\partial_\mu \phi)} \delta \phi - F^\mu \, , 
+\end{equation*}
+
+which clearly satisfies 
+
+\begin{equation*}
+    \partial_\mu j^\mu = 0 \, .
+\end{equation*}
+
+This allows us to define the conserved charge as stated in Noether's theorem. Let us show that it is indeed conserved; take the time derivative of the charge and notice
+
+\begin{align*}
+   \pdv{Q}{t} =  \pdv{Q}{x^0}  & = \int_V \deriv^3 x \, \partial_0 j^0 \\
+   & = - \int_V \deriv^3 x \, \partial_i j^i \\
+   & = - \int_{\partial V} \deriv S \, n_i j^i\\
+   & = 0 \, ,
+\end{align*}
+
+with $i = 1,2,3$, and $n_i$ a unit normal vector. The last line is true, provided that the fields vanish at infinity or are compactly supported on the volume $V$. \\
+
+An important case of conserved current is the \textit{energy momentum} (E-M) tensor. It is the conserved current generated by infinitesimal spacetime translations of the form 
+
+\begin{equation*}
+    x^\mu \rightarrow x^\mu + \epsilon^\mu \, ,
+\end{equation*}
+
+as is defined as follows:
+
+\begin{equation*}
+    (j^\mu)_\nu = T^\mu_\nu : = \partial_\nu \phi \pdv{\mathcal{L}}{(\partial_\mu \phi)} - \delta^\mu_\nu \mathcal{L} \, ,
+\end{equation*}
+
+such that
+
+\begin{equation*}
+    \partial_\mu T^\mu_\nu = 0 \, .
+\end{equation*}
+
+This formalises the conservation of momentum and energy that we expect for matter. For common examples, it is symmetric, i.e.,
+\begin{equation*}
+    T^{\mu \nu} = T^{\nu \mu} \, .
+\end{equation*}
+
+There are cases where it is not-symmetric however, in these cases we may define the \textit{Belinfante–Rosenfeld tensor} 
+
+\begin{equation*}
+    \Theta^{\mu \nu} = T^{\mu \nu} - \partial_\rho T^{\rho \mu \nu} \, ,
+\end{equation*}
+
+such that $T^{\rho \mu \nu} = - T^{\mu \rho \nu}$ (i.e., an antisymmetric tensor), and 
+
+\begin{equation*}
+    \partial_\mu \Theta^{\mu \nu} = 0 \, .
+\end{equation*}
+
+We can always define such a tensor, as the E-M tensor, as defined in General relativity, is always symmetric. 
+
+
+
+\textbf{Example:} Consider the infinitesimal Lorentz transformation, 
+
+\begin{equation*}
+    x^\mu \rightarrow x^\mu + \omega^{\mu}_\nu x^\nu \, ,
+\end{equation*}
+
+with the field transforming as
+
+\begin{equation*}
+    \phi(x) \rightarrow\phi(x) - \omega^{\mu}_\nu x^\nu \partial_\mu \phi  \, ,
+\end{equation*}
+
+using Taylor's theorem. This transformation yields the following transformation of the Lagrangian (noting that it is a scalar)
+
+\begin{equation*}
+    \mathcal{L}(x) \rightarrow \mathcal{L}^\prime(x^\prime)= \mathcal{L}(x) - \omega^\mu_\nu x^\nu \partial_\mu \mathcal{L} \, .
+\end{equation*}
+
+Let us be clear; the above does not mean that it is an explicit function of the spacetime position $x^\mu$; it merely states that it transforms as a scalar; the $x$-dependence is held within the fields and their derivatives. Thus, the variation is 
+
+\begin{equation*}
+    \delta \mathcal{L} = - \omega^\mu_\nu x^\nu \partial_\mu \mathcal{L} = -\partial_\mu(\omega^\mu_\nu x^\nu \mathcal{L}) \, ,
+\end{equation*}
+
+using the anti-symmetry of $\omega$. This transformation gives rise to the current
+
+\begin{align*}
+    j^\mu & = -\omega^\rho_\nu x^\nu \partial_\rho \phi \pdv{\mathcal{L}}{(\partial_\mu \phi)} + \omega^\mu_\nu x^\nu \mathcal{L}\\
+    & = -\omega^\rho_\nu x^\nu \left(\underbrace{\partial_\rho \phi \pdv{\mathcal{L}}{(\partial_\mu \phi)} - \delta^\mu_\rho \mathcal{L}}_{\text{E-M Tensor}}\right) \, .
+\end{align*}
+
+As stated, we can identify the expression within the brackets as the energy-momentum  tensor. In our example, we find
+
+
+\begin{equation*}
+    j^\mu = -\omega^\rho_\nu x^\nu T^\mu_\rho \, .
+\end{equation*}
+
+Let us identify the conserved charge generated by the 3 spacetime rotations. For rotations, we restrict $\omega$ to spatial indices $i,j= 1,2,3$, and notice that a general spatial rotation takes the form
+
+
+
+\begin{equation*}
+    \omega_{ij} = \epsilon_{ijk} \theta n_k \, , \hspace{0.15cm} \omega_{0i} = - \omega_{i0} = 0 \, ,
+\end{equation*}
+
+with $\theta$ small, and a unit vector $n_k$ identifying the axis of rotation. As a quick aside, look at the case for a rotation about $x^3$. Take the unit vector to be $n_k = (0,0,1)$, yielding
+
+
+\begin{align*}
+    \omega_{ij} & = \theta \epsilon_{ij3}  = \theta\begin{pmatrix}
+        0 & 1 & 0 & 0\\
+        -1 & 0 & 0 & 0\\
+        0 & 0 & 0 & 0\\
+        0& 0 & 0 & 0
+    \end{pmatrix} \, ,
+\end{align*}
+
+
+
+
+
+which, when we substitute into the expression for $\Lambda$, yields the correct infinitesimal rotation matrix around $x_3$. \\
+
+With this expression for $\omega$, the conserved charge is 
+
+\begin{align*}
+    Q & = - \int \deriv^3x \, \omega^0_\nu x^\nu T^0_0 + \omega^i_0 x^0 T^0_i + \omega^i_j x^j T^0_i \\
+    & = -\int \deriv ^3 x \,\omega_{ij}x^j T^{0j}\\
+    & = -\frac{1}{2}\int \deriv^3 x \, \left(\omega_{ij} x^i T^{0j} - \omega_{ji} x^j T^{0i} \right)\\
+    & = \frac{1}{2}\int d^3x \left(-\theta \epsilon_{ijk}   x^i T^{0j} + \theta \epsilon_{jik}x^j T^{0i} \right) n_k\\
+    & = \frac{\theta}{2} \epsilon_{ijk} \int \deriv ^3 x \, \left(x^j T^{0k} - x^k T^{0j}\right) n_i\\
+    & = \theta Q_i n_i \, ,
+\end{align*}
+
+where 
+
+\begin{equation*}
+    Q_i : = \frac{1}{2} \epsilon_{ijk} \int \deriv ^3 x \, \left(x^j T^{0k} - x^k T^{0j}\right) \, .
+\end{equation*}
+
+Physically, this charge corresponds to the angular momentum charge; generated by a rotation through theta degrees. \\
+
+These charges are generated by rotations; we are ignoring 3 extra viable Lorentz transformations: boosts. A infinitesimal Lorentz boost takes the form 
+
+\begin{equation*}
+    \omega_{i0} = \xi n_{i}, \hspace{0.25cm} \omega_{0i} = -\xi n_i, \hspace{0.25cm} \omega_{ij} = 0 \, ,\hspace{0.25cm}\omega_{00} = 0
+\end{equation*}
+where $\xi n_i$ is an infinitesimal spatial vector representing the \textit{rapidity}. Using the same calculations as before, we find 
+
+\begin{align*}
+    Q &  = - \int \deriv^3x \hspace{0.15cm} \omega^0_i x^i T^0_0 \\
+    & = - \int \deriv^3x \hspace{0.15cm} \xi n_ix^iT^{00} \\
+    \implies \xi Q^i n_i & = - \xi\int \deriv^3x \hspace{0.15cm}x^i T^{00} \hspace{0.15cm} n_i\\
+    \implies Q^i & := - \int \deriv^3x \hspace{0.15cm}x^i T^{00} \, .
+\end{align*}
+
+Let us compute the time derivative of these charges,
+
+\begin{align*}
+    \dv{Q^i}{t} & = - \int \deriv^3x \hspace{0.15cm} \left( \pdv{x^i}{x^0} T^{00} + x^i \pdv{T^{00}}{x^0}\right)\\
+    & = \int \deriv^3x \hspace{0.15cm}x^i \pdv{T^{j0}}{x^j}\\
+    & = \underbrace{\int \deriv^3x \hspace{0.15cm}\partial_j(x^i T^{j0})}_{=0} - \int \deriv^3x \hspace{0.15cm} T^{i0} \\
+    & = - \int \deriv^3x \hspace{0.15cm}  T^{i0} \, ,
+\end{align*}
+
+
+where we assumed $T^{ij}$ decays sufficiently fast at infinity. There are two important charges that arise due to the E-M tensor; these are the conserved energy and momentum
+
+\begin{equation*}
+    E:= \int \deriv^3x \hspace{0.15cm}  T^{00}, \hspace{0.25cm} P^i:= \int \deriv^3x \hspace{0.15cm}  T^{i0} \, .
+\end{equation*}
+
+With these, we then clearly identify 
+
+\begin{equation*}
+    \dv{Q^i}{t} = - P^i \, .
+\end{equation*}
+
+Momentum conservation implies 
+
+\begin{equation*}
+    \dv{P^i}{t} = 0 \, ,
+\end{equation*}
+
+hence we may associate
+
+\begin{equation*}
+    \dv{Q_i}{t} = -P^i = \text{constant}.
+\end{equation*}
+
+Physically, this implies that the charge is not conserved; it evolves as 
+
+\begin{equation*}
+    Q^i(t) = -P^it + Q^i(0) \, ,
+\end{equation*}
+i.e., linearly, and represents the shifting centre of energy of the system we expect between shifting inertial frames.
+
+\section{Complex Scalar Fields}
+
+The description of complex scalar fields is essentially the same as that of real scalar fields; however, our fields are now the maps $\psi: M \rightarrow \mathbb{C}$. Complex scalar fields also come with their own symmetries, which are not possessed by real scalar fields. \\
+
+Take, for example, the Lagrangian density 
+
+\begin{equation*}
+    \mathcal{L = \partial_\mu \psi^*}\partial^\mu \psi -m^2 \psi^* \psi \, ,
+\end{equation*}
+
+
+this is essentially the same as the Lagrangian we looked at earlier, however, now we have two different fields
+
+\begin{equation*}
+    \psi, \hspace{0.25cm} \psi^* \, .
+\end{equation*}
+
+Inspired by complex numbers, if we take the pointwise ``norm'' of the complex scalar field to be 
+
+\begin{align*}
+    \norm{\psi}^2 & := (\psi,\psi) \\
+    & = \psi^*(x)\psi(x) \, .
+\end{align*}
+
+We could then write the Lagrangian density as 
+
+\begin{equation*}
+    \mathcal{L} = \norm{\partial \psi}^2 - m^2 \norm{\psi}^2 \, ,
+\end{equation*}
+
+which looks almost identical to the real case. It also shows that this Lagrangian is a Lorentz scalar (as required).\\
+
+As stated, we treat the two fields as separate objects. This means that we actually obtain a set of \textit{two} Euler-Lagrange equations for this field: we find (check yourself),
+
+\begin{align*}
+    \partial_\mu \partial^\mu \psi^* - m^2\psi^* & = 0 \, ,\\
+    \partial_\mu \partial^\mu \psi - m^2\psi & = 0 \, .
+\end{align*}
+
+One immediately notices that these are the complex analogues of the Klein-Gordon equations derived earlier; this is good, as the separate fields obey the same equations (as they are both scalar fields). When the Lagrangian is written in terms of the norm, it gives a hint as to what extra symmetries complex scalar fields possess. Recall that given a complex number $z$, we can define a new complex number via
+
+\begin{equation*}
+    z^\prime = e^{i\theta}z \, , \hspace{0.25cm} \theta \in \mathbb{R} \, .
+\end{equation*}
+
+This corresponds to a rotation; to see this, write $z$ in its polar form. Notice that the norm of the new vector is 
+
+\begin{align*}
+    \norm{z^\prime}^2 & = (z^\prime,z^\prime)\\
+    & = z^*e^{-i\theta}e^{i \theta} z\\
+    & = z^* z\\
+    & = \norm{z}^2 \, .
+\end{align*}
+
+Thus, $z$ and $z^\prime$ are the same vector, however, $z^\prime$ is simply the rotated version of $z$. The set of all rotations that preserve the norm in $\mathbb{C}$ actually forms a group\footnote{Once we introduce a binary group operation$\cdot: G \times G \rightarrow G$, given by $e^{i\theta_1}\cdot e^{i\theta_2} = e^{i(\theta_1 + \theta_2)}$.}: \textit{the unitary group} $U(1)$. In general, the group $U(n)$ is the group of $n\times n$ matrices $U \in U(n)$ such that 
+\begin{equation*}
+    U^\dagger U = I_n \, ,
+\end{equation*}
+
+where $I_n$ is the $n\times n$ identity matrix. For our case, $n=1$, which corresponds to a complex scalar as seen above.
+\\
+
+We can apply the same reasoning to fields: suppose our field picks up a \textit{global phase}
+
+\begin{equation*}
+    \psi \rightarrow e^{i\alpha}\psi, \hspace{0.25cm} \alpha \ \in \mathbb{R} \, ,
+\end{equation*}
+
+where due to the fact that $e^{i2\pi} = 1$,we have $\alpha \sim \alpha + 2\pi k, k \in \mathbb{Z}$. Note that this transformation corresponds to the 1-parameter subgroup $U(\alpha):\mathbb{R} \rightarrow U(1)$, which can be thought of as a curve (more precisely, an arc) on our group manifold $U(1)$ (which is the circle $S^1$). The Lagrangian transforms as 
+
+\begin{align*}
+    \mathcal{L} \rightarrow \mathcal{L}^\prime = \mathcal{L} \, .
+\end{align*}
+
+Such a transformation is clearly a symmetry of this Lagrangian and the corresponding theory; this theory is said to have the symmetry group $U(1).$ From Noether's theorem, taking $\alpha$ to be infinitesimal, we find the corresponding conserved current
+
+\begin{equation*}
+    j^\mu = \pdv{L}{(\partial_\mu \phi)}\delta \phi + \pdv{L}{(\partial_\mu \phi^*)}\delta \phi^* \, ,
+\end{equation*}
+
+where:
+
+\begin{align*}
+    \delta \psi & = i\alpha \psi \\
+    \delta \psi^* & = -i\alpha \psi^* \, .
+\end{align*}
+
+The current can then be explicitly written as 
+
+\begin{equation*}
+    j^\mu = i\alpha\psi\,\partial^\mu\psi^* - i\alpha \psi^*\,\partial^\mu \psi\, \, .
+\end{equation*}
+
+The current is clearly conserved; this can be seen by using the field equations satisfied by $\psi$ and $\psi^*$. \\
+
+What happens if we take $\alpha$ to instead be local? This implies that the transformation takes the form 
+
+\begin{equation*}
+    \psi \rightarrow e^{i\alpha(x)}\psi \, , \hspace{0.25cm} \alpha: \mathbb{R}^{1,3} \rightarrow \mathbb{R} \, .
+\end{equation*}
+
+The Lagrangian density now transforms as 
+
+\begin{align*}
+    \mathcal{L} \rightarrow \mathcal{L^\prime} & = \partial_\mu\left(\psi^*e^{-i\alpha(x)}\right)\partial^\mu \left(e^{i\alpha(x)}\psi \right) - m^2 \psi^* \psi\\
+    & = \left(\partial_\mu\psi^*\,e^{-i\alpha(x)}-i\partial_\mu\alpha(x)\psi^* e^{-i\alpha(x)} \right)\left(e^{i\alpha(x)}\partial^\mu\psi+ie^{i\alpha(x)}\partial^\mu\alpha(x)\psi  \right) - m^2 \psi^* \psi\\
+    & = \left(\partial_\mu \psi^* - i\partial_\mu\alpha(x)\psi^*\right)\left(\partial^\mu \psi +i\partial^\mu\alpha(x)\psi\right) - m^2\psi^* \psi \, .
+\end{align*}
+
+
+What we have found above implies that the Lagrangian is not invariant under such a transformation, however, we know that the theory itself admits $U(1)$ as a global symmetry group. There is a way to remedy this; we must introduce the \textit{covariant derivative}.\\
+
+\subsection{Covariant Derivative}
+The covariant derivative, as the name suggests, transforms covariantly under group transformations; for example, under $\psi \rightarrow U(\alpha)\psi$ we would like our covariant derivative, denoted $D_\mu$, to transform via
+
+\begin{equation*}
+    D_\mu\psi \rightarrow U(\alpha)D_\mu \psi \, .
+\end{equation*}
+
+Essentially, it transforms in the same way as the field itself. This is actually what defines the covariant derivative:
+
+\begin{definition}
+Given a local $U(1)$ transformation, the covariant derivative is
+
+\begin{equation*}
+    D_\mu := \partial_\mu +iA_\mu\,, \hspace{0.25cm} \text{with} \hspace{0.15cm} A_\mu \rightarrow A_\mu - \partial_\mu \alpha(x) \, ,
+\end{equation*}
+
+such that
+
+\begin{align*}
+    D_\mu\psi \rightarrow D_\mu^\prime(U(\alpha)\psi)& = (\partial_\mu + iA_\mu -i \partial_\mu\alpha(x))(U(\alpha)\psi)\\
+    &= U(\alpha)i\partial_\mu \alpha(x) \psi+ U(\alpha)\partial_\mu \psi + U(\alpha)iA_\mu \psi - U(\alpha)i\partial_\mu \alpha(x)\psi\, \\
+    & = U(\alpha)(\partial_\mu\psi + iA_\mu \psi) = U(\alpha)D_\mu\psi \, .
+\end{align*}
+The field $A_\mu$ is often referred to as the gauge field.
+\end{definition}
+
+We are not being overly cautious with the above definition; we often also introduce a charge $q$, however, we have elected to set $q =1$. The important point is that requiring our derivative transforms like the field itself forces us to introduce a new field (which is also dynamical with its own equations of motion) $A_\mu$. This isn't just a neat mathematical trick, but an actual physically observable effect; one important example of this is the Berry phase. \\
+
+If you have done any GR, this construction and the definition of the covariant derivative will likely look familiar; there is a reason for this, which we shall not cover here\footnote{There is a beautiful geometric view of Gauge theories in terms of Principal $G$-bundles, which describes this structure and also relates closely to the mathematical formulation of general relativity.}. Regardless, with this definition of the covariant derivative, we may write our Lagrangian in terms of the covariant derivative instead,
+
+\begin{equation*}
+    \mathcal{L} = (D_\mu\psi)^* D^\mu \psi - m^2 \psi^* \psi \, .
+\end{equation*}
+
+Under a local $U(1)$ transformation, following the computations above, 
+
+\begin{align*}
+    \mathcal{L} \rightarrow \mathcal{L^\prime} &= (D_\mu\psi)^*e^{-i\alpha(x)} e^{i\alpha(x)}(D^\mu \psi) - m^2 \psi^*\psi\\
+    & = \mathcal{L} \, .
+\end{align*}
+
+Thus, the Lagrangian, expressed in terms of the covariant derivative, is invariant. This implies that our na\"ive guess of the form of the Lagrangian in terms of regular derivatives was the incorrect one, and that the true theory must be described in terms of this more geometric description. This observation leads to the study of Gauge theories. We elect not to cover gauge theories here, they are best suited to a second course in QFT. 
+
+\section{Maxwell and Proca theory (UNDER CONTRUCTION)}
+
+
+
+
+
+
+
+
+\end{document}
