@@ -5,7 +5,7 @@
 This repository contains a **pedagogical review** introducing **classical relativistic field theory**, the **calculus of variations**, **Noether’s theorem**, and **continuous symmetries**, with worked examples including **real/complex scalar fields**, **Lorentz symmetries**, and **internal U(1)** transformations. The final section develops **Maxwell and Proca theory**, which is currently under construction. These notes are mainly aimed at people introducing themselves to QFT for the first time. They are mainly inspired by David Tong's lecture course as well as Matthew D. Schwartz’s excellent textbook on the subject.
 ## Contents
 
-- [`Symmetries_in_Classical_Field_Theory__A_Brief_Overview(1).pdf`](./Symmetries_in_Classical_Field_Theory__A_Brief_Overview(1).pdf) — current compiled draft
+- [`Symmetries_in_Classical_Field_Theory__A_Brief_Overview (1).pdf`](./Symmetries_in_Classical_Field_Theory__A_Brief_Overview(1).pdf) — current compiled draft
 
 ## Outline (current draft)
 
